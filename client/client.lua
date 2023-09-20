@@ -70,7 +70,7 @@ RegisterCommand("testMiniGame", function()
             -- lineSpeedUp = 1,
             time = 30,
             -- halfSuccessMin = 70,
-            -- valueUpSpeed = 0.3,
+            valueUpSpeed = 1,
             -- valueDownSpeed = 0.3,
             -- areaMoveSpeed = "0.5",
             -- img = "img/fire.webp",

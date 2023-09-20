@@ -6,8 +6,9 @@ const LINE_WIDTH = 0.5;
 const GAME_BODY = document.getElementById("main");
 const LOAD_BAR = document.getElementById("loadBar");
 const END_ALERT = document.getElementById('endAlert');
+const colorThief = new ColorThief();
 
-startMiniGame = (data) => {// data : difficultyFactor , lineSpeedUp , time , halfSuccessMin , valueUpSpeed , valueDownSpeed , areaMoveSpeed , img , areaColor;
+startMiniGame = (data) => {// data : difficultyFactor , lineSpeedUp , time , halfSuccessMin , valueUpSpeed , valueDownSpeed , areaMoveSpeed , img ;
     LOAD_BAR.dataset.img = (data?.img || "img/fire.webp");
     LOAD_BAR.value = DEFAULT_START_BAR_VALUE;
     let canvasDraw = new SircleCanvas(250);
@@ -17,6 +18,13 @@ startMiniGame = (data) => {// data : difficultyFactor , lineSpeedUp , time , hal
     let randomStart = randomRange(START_AREA, END_AREA);
     let lineS = START_AREA + 10;
     loadBar = new ldBar("#loadBar", { "value": DEFAULT_START_BAR_VALUE });
+
+    const getColorImg = document.createElement("img");
+    getColorImg.src = LOAD_BAR.dataset.img
+    getColorImg.onload = () => {
+        imgColor = colorThief.getColor(getColorImg)
+        getColorImg.remove();
+    };
 
     const handleKeyDown = (e) => {
         if (e.key == 'e') lineUp = true;
@@ -50,11 +58,11 @@ startMiniGame = (data) => {// data : difficultyFactor , lineSpeedUp , time , hal
 
         if (isRadianInInterval(lineArea, areaStart, areaEnd)) {
             loadBar.value < 100 ? loadBar.value += (data?.valueUpSpeed || .3) : loadBar.value = 100;
-            canvasDraw.newArea((data?.areaColor || `rgb(255,0,0)`), areaStart, areaEnd, 250, 30, 20);
+            canvasDraw.newArea(`rgb(${imgColor})`, areaStart, areaEnd, 250, 30, 20);
             canvasDraw.newArea(`rgb(255,255,255)`, Math.PI * lineS / 180, Math.PI * (lineS + (LINE_WIDTH * 2)) / 180, 250, 80, 10);
         } else {
             loadBar.value > DEFAULT_START_BAR_VALUE ? loadBar.value -= (data?.valueDownSpeed || .3) : loadBar.value = DEFAULT_START_BAR_VALUE;
-            canvasDraw.newArea((data?.areaColor || `rgb(255,0,0)`), areaStart, areaEnd, 250, 30, 8);
+            canvasDraw.newArea(`rgb(${imgColor})`, areaStart, areaEnd, 250, 30, 8);
             canvasDraw.newArea(`rgb(255,255,255)`, Math.PI * lineS / 180, Math.PI * (lineS + (LINE_WIDTH * 2)) / 180, 250, 80, 0);
         }
 
@@ -89,15 +97,15 @@ startMiniGame = (data) => {// data : difficultyFactor , lineSpeedUp , time , hal
     GAME_BODY.style.display = "block";
 
     const endGame = async () => {
-        if (loadBar.value == 100) return sendEndGame('success', data?.areaColor);
-        loadBar.value >= (data?.halfSuccessMin || 100) ? sendEndGame('halfSuccess', data?.areaColor) : sendEndGame('failed', data?.areaColor);
+        if (loadBar.value == 100) return sendEndGame('success');
+        loadBar.value >= (data?.halfSuccessMin || 100) ? sendEndGame('halfSuccess') : sendEndGame('failed');
     }
 }
 
-const sendEndGame = (endType, color) => {
+const sendEndGame = (endType) => {
     loadBar.set(DEFAULT_START_BAR_VALUE);
     post("endGame", endType)
-    if (endType === "success" || endType === "halfSuccess") startEndAlertAnimation(color);
+    if (endType === "success" || endType === "halfSuccess") startEndAlertAnimation();
 }
 
 const randomRange = (start, end) => (Math.random() * (end - start)) + start;
@@ -116,12 +124,13 @@ const animateCSS = (element, animation, prefix = 'animate__') =>
         element.addEventListener('animationend', handleAnimationEnd, { once: true });
     });
 
-const startEndAlertAnimation = async (color = "orange") => {
+const startEndAlertAnimation = async () => {
     const imageDiv = END_ALERT.getElementsByTagName('img')[0];
     const frame = document.getElementById('frame');
     imageDiv.src = LOAD_BAR.dataset.img;
-    frame.style.border = "3px solid " + color;
-    frame.style.boxShadow = "inset 0 0 40px -10px " + color;
+    const frameColor = colorThief.getColor(imageDiv);
+    frame.style.border = "3px solid " + `rgb(${frameColor})`;
+    frame.style.boxShadow = "inset 0 0 40px -10px " + `rgb(${frameColor})`;
     END_ALERT.style.opacity = 1;
     await animateCSS(END_ALERT, "flip")
     await animateCSS(END_ALERT, "tada")
