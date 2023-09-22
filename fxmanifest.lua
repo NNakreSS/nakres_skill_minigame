@@ -11,12 +11,11 @@ client_script 'client/client.lua'
 ui_page 'ui/index.html'
 
 files {
-    "ui/img/*.**",
-    "ui/*.js",
-    "ui/index.html",
-    "ui/style.css"
+    "ui/**",
 }
 
 -- dependency ''
 
 lua54 'yes'
+
+-- data : difficultyFactor , lineSpeedUp , time , halfSuccessMin , valueUpSpeed , valueDownSpeed , areaMoveSpeed , img ;
